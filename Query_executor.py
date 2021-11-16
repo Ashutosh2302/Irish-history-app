@@ -3,8 +3,9 @@ import string
 
 
 class QueryExecutor:
+    
     def __init__(self):
-        self.ontologyBaseURI = 'http://www.semanticweb.org/ashutoshbansal/ontologies/2021/10/irishhistory/'
+        self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory'
         self.endPoint = 'http://localhost:7200/repositories/KDE-project'
 
     def loading_default_data(self):
@@ -34,11 +35,10 @@ class QueryExecutor:
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 select DISTINCT ?name ?town where { 
-	                ?town rdf:type dbo:Town .
+	                ?town rdf:type ours:locality .
                     ?town ours:name ?name .
                 }
                 ORDER BY ASC(UCASE(str(?name)))
-
                 '''
 
         sparql.setQuery(query)
@@ -47,6 +47,86 @@ class QueryExecutor:
         townNames = [e['name']['value'] for e in towns['results']['bindings']]
         townIRIs = [e['town']['value'] for e in towns['results']['bindings']]
         # townIRIs = [e[0: e.rfind('/'):] + e[e.rfind('/') + 1::] for e in townIRIs]
+        
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        query = '''
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+
+                SELECT ?museum ?name WHERE {
+                    ?museum a dbo:Museum .
+                    ?museum dbo:name ?name .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                '''
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        museums = sparql.query().convert()
+        museumNames = [e['name']['value'] for e in museums['results']['bindings']]
+        museumIRIs = [e['museum']['value'] for e in museums['results']['bindings']]
+        
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        query = '''
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+
+                SELECT ?landmark ?name WHERE {
+                    ?landmark a ours:landmark .
+                    ?landmark ours:name ?name .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                '''
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        landmarks = sparql.query().convert()
+        landmarkNames = [e['name']['value'] for e in landmarks['results']['bindings']]
+        landmarkIRIs = [e['landmark']['value'] for e in landmarks['results']['bindings']]
+
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        query = '''
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+
+                SELECT ?walledTown ?name WHERE {
+                    ?walledTown a ours:walledTown .
+                    ?walledTown ours:name ?name .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                '''
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        walledTowns = sparql.query().convert()
+        walledTownNames = [e['name']['value'] for e in walledTowns['results']['bindings']]
+        walledTownIRIs = [e['walledTown']['value'] for e in walledTowns['results']['bindings']]
+        
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        query = '''
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+
+               SELECT ?pilgrimPath ?name WHERE {
+                   ?pilgrimPath a ours:pilgrimPath .
+                   ?pilgrimPath ours:name ?name .
+                   }
+                ORDER BY ASC(UCASE(str(?name)))
+                '''
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        pilgrimPaths = sparql.query().convert()
+        pilgrimPathNames = [e['name']['value'] for e in pilgrimPaths['results']['bindings']]
+        pilgrimPathIRIs = [e['pilgrimPath']['value'] for e in pilgrimPaths['results']['bindings']]
 
         query = '''      
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -76,11 +156,29 @@ class QueryExecutor:
         countiesForDropdown = []
         for i in range(len(countyNames)):
             countiesForDropdown.append({'label': countyNames[i], 'value': countyIRIs[i]})
+            
+        museumsForDropdown = []
+        for i in range(len(museumNames)):
+            museumsForDropdown.append({'label': museumNames[i], 'value': museumIRIs[i]})
 
-        return countiesForDropdown, townsForDropdown
+        landmarksForDropdown = []
+        for i in range(len(landmarkNames)):
+            landmarksForDropdown.append({'label': landmarkNames[i], 'value': landmarkIRIs[i]})     
+            
+        walledTownsForDropdown = []
+        for i in range(len(walledTownNames)):
+            walledTownsForDropdown.append({'label': walledTownNames[i], 'value': walledTownIRIs[i]})      
+            
+        pilgrimPathsForDropdown = []
+        for i in range(len(pilgrimPathNames)):
+            pilgrimPathsForDropdown.append({'label': pilgrimPathNames[i], 'value': pilgrimPathIRIs[i]})      
+            
+            
+        return countiesForDropdown, townsForDropdown, museumsForDropdown, landmarksForDropdown, walledTownsForDropdown, pilgrimPathsForDropdown
 
     @staticmethod
     def create_filter(entityType, varibale):
+        print(entityType);
         listOfTypes = f'FILTER (?{varibale} IN ('
         numTypes = 0
 
@@ -115,7 +213,7 @@ class QueryExecutor:
             SELECT *  WHERE {
                 ?place a ?thing .
                 ?place ours:name ?name .
-                ?place ours:locatedIn <$LOCATION>
+                ?place gn:locatedIn <$LOCATION>
 
                 $FILTER
             }
@@ -159,7 +257,7 @@ class QueryExecutor:
             if location.lower() == 'county':
                 LOCATION = 'ours:county'
             else:
-                LOCATION = 'dbo:Town'
+                LOCATION = 'ours:locality'
             query = string.Template(query).substitute(FILTER=FILTER, PATTERN=pattern, LOCATION=LOCATION)
 
             sparql.setQuery(query)
@@ -174,3 +272,48 @@ class QueryExecutor:
                                 results['results']['bindings'][0]['count']['value']
         print(output)
         return output
+
+    def query_4(self, entityType, locationType, otherPoiInLocation):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
+
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        output = { 'placesOfInterest' : ''}
+        
+        query = """           
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT ?place ?name WHERE {
+                    ?place a ?POI .
+                    ?place gn:locatedIn ?town .
+                    ?town a $LOCATION .
+                    ?place ours:name ?name .
+                    <$otherPoiInLocation2> gn:locatedIn ?town .
+                    $FILTER
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                """
+        if locationType.lower() == 'county':
+            subLOCATION = 'ours:county'
+        else:
+            subLOCATION = 'ours:locality'
+        query = string.Template(query).substitute(FILTER=FILTER, LOCATION = subLOCATION, otherPoiInLocation2=otherPoiInLocation)
+        print(query);
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
+        #print("results:", results)
+        #output['otherPOIs'] = [];
+        #if (len(results['results']['bindings']) > 0): output['otherPOIs'] = [e['place']['value'] for e in results['results']['bindings']]
+        #return output
+    
+
+    #def query_4(self, p):
+#poiType = ['Pilgrim Path', 'Walled Towns']
+#debug = QueryExecutor()
+#debug.query_4(poiType, 'County', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive')
+#QueryExecutor().query_4( poiType, 'County', 'Landmarks', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive');
+
