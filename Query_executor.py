@@ -14,7 +14,7 @@ class QueryExecutor:
 
         query = '''
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
         select DISTINCT ?county ?name where {
 	        ?county rdf:type ours:county .
                 ?county ours:name ?name .
@@ -258,6 +258,7 @@ class QueryExecutor:
                 LOCATION = 'ours:county'
             else:
                 LOCATION = 'ours:locality'
+
             query = string.Template(query).substitute(FILTER=FILTER, PATTERN=pattern, LOCATION=LOCATION)
 
             sparql.setQuery(query)
