@@ -9,7 +9,7 @@ class QueryExecutor:
 
     def loading_default_data(self):
 
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
 
         query = '''
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -28,8 +28,7 @@ class QueryExecutor:
         countyNames = [e['name']['value'] for e in counties['results']['bindings']]
         countyIRIs = [e['county']['value'] for e in counties['results']['bindings']]
 
-
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
@@ -48,6 +47,27 @@ class QueryExecutor:
         townNames = [e['name']['value'] for e in towns['results']['bindings']]
         townIRIs = [e['town']['value'] for e in towns['results']['bindings']]
         # townIRIs = [e[0: e.rfind('/'):] + e[e.rfind('/') + 1::] for e in townIRIs]
+
+        query = '''      
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+            PREFIX gn: <http://www.geonames.org/ontology#>
+            
+            SELECT ?period ?name WHERE {
+                ?period a ?timePeriod .
+                ?period ours:name ?name
+                FILTER(?timePeriod IN (ours:HistoricalPeriod, dbo:HistoricalPeriod))
+            }
+            ORDER BY ASC(UCASE(str(?name)))
+            '''
+
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        historic_periods = sparql.query().convert()
+        historic_period_names = [e['name']['value'] for e in towns['results']['bindings']]
+        historic_period_IRIs = [e['town']['value'] for e in towns['results']['bindings']]
 
         townsForDropdown = []
         for i in range(len(townNames)):
@@ -83,7 +103,7 @@ class QueryExecutor:
     def query_1(self, entityType, location):
         FILTER = QueryExecutor().create_filter(entityType, 'thing')
 
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
 
         query = """
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -114,7 +134,7 @@ class QueryExecutor:
 
     def query_2(self, entityType, location):
         FILTER = QueryExecutor().create_filter(entityType, 'POI')
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         output = {'max': '', 'min': ''}
         for pattern in ['DESC', 'ASC']:
             query = """           
@@ -147,9 +167,10 @@ class QueryExecutor:
             results = sparql.query().convert()
             print("results:", results)
             if pattern == 'DESC':
-                output['max'] = results['results']['bindings'][0]['name']['value'], results['results']['bindings'][0]['count']['value']
+                output['max'] = results['results']['bindings'][0]['name']['value'], \
+                                results['results']['bindings'][0]['count']['value']
             else:
-                output['min'] = results['results']['bindings'][0]['name']['value'], results['results']['bindings'][0]['count']['value']
+                output['min'] = results['results']['bindings'][0]['name']['value'], \
+                                results['results']['bindings'][0]['count']['value']
         print(output)
         return output
-

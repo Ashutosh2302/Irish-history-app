@@ -1,22 +1,8 @@
 import dash
 from dash import dcc
 from dash import html
-
 from dash.dependencies import Input, Output, State
-import requests
-from SPARQLWrapper import SPARQLWrapper, JSON
-import string
 from Query_executor import QueryExecutor
-
-
-
-# # @lru_cache(maxsize=10)
-# def query():
-#     # res = requests.request('GET', urlForSelectAllCounties)
-#     # print(res.text)
-#     # counties = [res.text]  # Need to convert this string into an array of individual values
-#     print(counties)
-
 
 query_1 = {'poi': '', 'location-type': '', 'location': ''}
 query_2 = {'poi': '', 'location-type': '', 'location': ''}
@@ -112,7 +98,8 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Get max and min POI", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.H2(children="Get max and min POI",
+            style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFF00'},
         children=[
@@ -174,7 +161,7 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select point of interest",
             ),
-            #another dropdown for names of another poi
+            # another dropdown for names of another poi
             html.H4(children="Select a name"),
 
             dcc.Dropdown(
@@ -264,7 +251,6 @@ app.layout = html.Div([
         ]
     ),
 
-
     html.H2(children="List names of Poi associated with year/historicYear that any other poi is associated with",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
@@ -316,6 +302,122 @@ app.layout = html.Div([
             html.Div(id='query7-output'),
 
         ]
+    ),
+
+    html.H2(children="List names of Poi in town/city and associated with any given year/historicYear/ historicPeriod",
+            style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.Div(
+        style={'backgroundColor': '#FFFF00'},
+        children=[
+            html.H4(children="Select point of interest you want to know about"),
+
+            dcc.Dropdown(
+                id='poi-dropdown-8',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                multi=True,
+                placeholder="Select point(s) of interest",
+            ),
+            html.H4(children="Select location type"),
+            dcc.Dropdown(
+                id='location-dropdown-8',
+                style={'width': '40%'},
+                options=[{'label': l, 'value': l} for l in location],
+                value='',
+                placeholder="Select location type",
+            ),
+            html.H4(children=f"Select location"),
+            dcc.Dropdown(
+                id='location-town-county-dropdown-8',
+                style={'width': '40%'},
+            ),
+            html.H4(children="Associated with"),
+            dcc.Dropdown(
+                id='period-dropdown-8',
+                style={'width': '40%'},
+                options=[
+                    {'label': 'year', 'value': 'year'},
+                    {'label': 'historicCentury', 'value': 'historicCentury'},
+                    {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
+                ],
+                value='',
+                placeholder="Select period",
+            ),
+
+            html.H4(children="Select"),
+            dcc.Dropdown(
+                id='period-pattern-8',
+                style={'width': '60%'},
+
+                value='',
+
+            ),
+            html.Button('Submit', id='submit_8', n_clicks=0),
+            html.Div(id='query8-output'),
+
+        ]
+    ),
+
+    html.H2(
+        children="List names of Poi in town/city and associated with any given year/historicYear/ historicPeriod of another poi",
+        style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.Div(
+        style={'backgroundColor': '#FFFF00'},
+        children=[
+            html.H4(children="Select point of interest you want to know about"),
+
+            dcc.Dropdown(
+                id='poi-dropdown-9',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                multi=True,
+                placeholder="Select point(s) of interest",
+            ),
+            html.H4(children="Select location type"),
+            dcc.Dropdown(
+                id='location-dropdown-9',
+                style={'width': '40%'},
+                options=[{'label': l, 'value': l} for l in location],
+                value='',
+                placeholder="Select location type",
+            ),
+
+            html.H4(children="Associated with"),
+            dcc.Dropdown(
+                id='period-dropdown-9',
+                style={'width': '40%'},
+                options=[
+                    {'label': 'year', 'value': 'year'},
+                    {'label': 'historicCentury', 'value': 'historicCentury'},
+                    {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
+                ],
+                value='',
+                placeholder="Select period",
+            ),
+            html.H4(children="Select a Poi"),
+
+            dcc.Dropdown(
+                id='another-poi-dropdown-9',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                placeholder="Select point of interest",
+            ),
+            # another dropdown for names of another poi
+            html.H4(children="Select a name"),
+            dcc.Dropdown(
+                id='poi-names-9',
+                style={'width': '60%'},
+                value='',
+
+            ),
+
+            html.Button('Submit', id='submit_9', n_clicks=0),
+            html.Div(id='query9-output'),
+
+        ]
     )
 
 ])
@@ -330,7 +432,6 @@ app.layout = html.Div([
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, location_type, location):
-
     query_1['poi'] = poi
     query_1['location-type'] = location_type
     query_1['location'] = location
@@ -348,7 +449,6 @@ def set_cities_options(value):
     return counties if value == 'County' else towns
 
 
-
 @app.callback(
     Output('query2-output', 'children'),
     Input('submit_2', 'n_clicks'),
@@ -358,12 +458,12 @@ def set_cities_options(value):
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, location_type, location):
-
     query_2['poi'] = poi
     query_2['location-type'] = location_type
     query_2['location'] = location
     print(f"query 2: {query_2}")
     return f'output: {QueryExecutor().query_2(poi)}'
+
 
 # callback to chain the dropdowns
 @app.callback(
@@ -382,7 +482,6 @@ def set_cities_options(value):
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, location_type):
-
     query_3['poi'] = poi
     query_3['location-type'] = location_type
     print(f"query 3: {query_3}")
@@ -399,12 +498,11 @@ def update_output(n_clicks, poi, location_type):
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, location_type, another_poi):
-
     query_4['poi'] = poi
     query_4['location-type'] = location_type
     query_4['another_poi'] = another_poi
 
-    #TODO: name of another poi using sparql query
+    # TODO: name of another poi using sparql query
 
     print(f"query 4: {query_4}")
     return f'POI: {poi}, location type: {location_type}, another poi: {another_poi}'
@@ -419,7 +517,6 @@ def update_output(n_clicks, poi, location_type, another_poi):
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, period, pattern):
-
     query_5['poi'] = poi
     query_5['associated-with'] = period
     query_5['pattern'] = ''
@@ -435,10 +532,9 @@ def update_output(n_clicks, poi, period, pattern):
     prevent_initial_call=True
 )
 def update_output(n_clicks, period, poi):
-
     query_6['period'] = period
     query_6['poi'] = poi
-    #TODO: max and min poi(s)
+    # TODO: max and min poi(s)
     print(f"query 6: {query_6}")
     return f'period: {period}, poi(s): {poi}"'
 
@@ -452,18 +548,53 @@ def update_output(n_clicks, period, poi):
     prevent_initial_call=True
 )
 def update_output(n_clicks, poi, period_type, another_poi):
-
     query_7['poi'] = poi
     query_7['period_type'] = period_type
     query_7['another_poi'] = another_poi
 
-    #TODO: name of another poi using sparql query
+    # TODO: name of another poi using sparql query
 
     print(f"query 7: {query_7}")
     return f'POI: {poi}, period type: {period_type}, another poi: {another_poi}'
 
 
+@app.callback(
+    Output('query8-output', 'children'),
+    Input('submit_8', 'n_clicks'),
+    State('poi-dropdown-8', 'value'),
+    State('location-dropdown-8', 'value'),
+    State('location-town-county-dropdown-8', 'value'),
+    State('period-dropdown-8', 'value'),
+
+    prevent_initial_call=True
+)
+def update_output(n_clicks, poi, location_type, location, period):
+    print(poi, location_type, location, period)
+    return f'POI: {poi}, location type: {location_type}, location: {location} period type: {period}'
+
+
+@app.callback(
+    dash.dependencies.Output('location-town-county-dropdown-8', 'options'),
+    [dash.dependencies.Input('location-dropdown-8', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    return counties if value == 'County' else towns
+
+
+@app.callback(
+    Output('query9-output', 'children'),
+    Input('submit_9', 'n_clicks'),
+    State('poi-dropdown-9', 'value'),
+    State('location-dropdown-9', 'value'),
+    State('period-dropdown-9', 'value'),
+    State('another-poi-dropdown-9', 'value'),
+
+    prevent_initial_call=True
+)
+def update_output(n_clicks, poi, location_type, period, another_poi):
+    print(poi, location_type, location, period)
+    return f'POI: {poi}, location type: {location_type}, period type: {period}, location: {another_poi}'
+
 
 if __name__ == '__main__':
-
     app.run_server(debug=True)
