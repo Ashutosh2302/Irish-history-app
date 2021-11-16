@@ -593,7 +593,7 @@ def set_cities_options(value):
 )
 def update_output(n_clicks, poi, location_type, period, another_poi):
     print(poi, location_type, location, period)
-    return f'POI: {poi}, location type: {location_type}, period type: {period}, location: {another_poi}'
+    return f'POI: {poi}, location type: {location_type}, period type: {period}, another_poi: {another_poi}'
 
 
 if __name__ == '__main__':
