@@ -336,9 +336,7 @@ def update_output(n_clicks, poi, location_type, location):
     query_1['location'] = location
     print(f"query 1: {query_1}")
 
-    QueryExecutor().getPointsOfInterestInPlace(poi, location)
-
-    return f'POI: {poi}, location type: {location_type}, location: {location}'
+    return f'output: {QueryExecutor().query_1(poi, location)}'
 
 
 # callback to chain the dropdowns
