@@ -363,8 +363,7 @@ def update_output(n_clicks, poi, location_type, location):
     query_2['location-type'] = location_type
     query_2['location'] = location
     print(f"query 2: {query_2}")
-    return f'POI: {poi}, location type: {location_type}, location: {location}'
-
+    return f'output: {QueryExecutor().query_2(poi)}'
 
 # callback to chain the dropdowns
 @app.callback(
@@ -387,7 +386,8 @@ def update_output(n_clicks, poi, location_type):
     query_3['poi'] = poi
     query_3['location-type'] = location_type
     print(f"query 3: {query_3}")
-    return f'POI: {poi}, location type: {location_type}'
+    output = QueryExecutor().query_2(poi, location_type)
+    return f'max: {output["max"]}, min: {output["min"]}'
 
 
 @app.callback(

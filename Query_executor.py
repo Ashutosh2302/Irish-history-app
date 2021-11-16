@@ -1,23 +1,16 @@
-import requests
 from SPARQLWrapper import SPARQLWrapper, JSON
-import numpy as np
 import string
-import json
 
 
 class QueryExecutor:
     def __init__(self):
         self.ontologyBaseURI = 'http://www.semanticweb.org/ashutoshbansal/ontologies/2021/10/irishhistory/'
-        self.endPoint = 'http://LAPTOP-45QEIGK2:7200/repositories/KDE-project'
-
-
-
+        self.endPoint = 'http://localhost:7200/repositories/KDE-project'
 
     def loading_default_data(self):
 
-        sparql = SPARQLWrapper("http://LAPTOP-45QEIGK2:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
 
-        #
         query = '''
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
@@ -32,24 +25,11 @@ class QueryExecutor:
         sparql.setReturnFormat(JSON)
         counties = sparql.query().convert()
 
-        # urlForSelectAllCounties = f'{self.endPoint}?query={selectAllCountiesQuery}'
-        # countyResponse = requests.request('GET', urlForSelectAllCounties)
-        # counties = countyResponse.json()
         countyNames = [e['name']['value'] for e in counties['results']['bindings']]
         countyIRIs = [e['county']['value'] for e in counties['results']['bindings']]
-        # countyIRIs = [e[0: e.rfind('/'):] + e[e.rfind('/') + 1::] for e in countyIRIs]
 
-        # selectAllTownsQuery = '''PREFIX%20rdf%3A%20%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E%0A
-        # PREFIX%20ours%3A%20%3Chttp%3A%2F%2Fwww.semanticweb.org%2Fashutoshbansal%2Fontologies%2F2021%2F10%2Firishhistory%3E%0A
-        # select DISTINCT ?name ?town where {
-        #  	?town rdf:type ours:town .
-        #     ?town ours:name ?name .
-        # }&Accept=application/sparql-results%2Bjson'''
-        # urlForSelectAllTowns = f'{self.endPoint}?query={selectAllTownsQuery}'
-        # townResponse = requests.request('GET', urlForSelectAllTowns)
-        # towns = townResponse.json()
 
-        sparql = SPARQLWrapper("http://LAPTOP-45QEIGK2:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
@@ -103,7 +83,7 @@ class QueryExecutor:
     def query_1(self, entityType, location):
         FILTER = QueryExecutor().create_filter(entityType, 'thing')
 
-        sparql = SPARQLWrapper("http://LAPTOP-45QEIGK2:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
 
         query = """
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -128,5 +108,48 @@ class QueryExecutor:
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()
-        return results
         print("results:", results)
+
+        return results
+
+    def query_2(self, entityType, location):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        output = {'max': '', 'min': ''}
+        for pattern in ['DESC', 'ASC']:
+            query = """           
+                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                    PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                    PREFIX dbo: <http://dbpedia.org/ontology/>
+                    PREFIX gn: <http://www.geonames.org/ontology#>
+                    
+                    SELECT ?name (COUNT(?o) as ?count) WHERE {
+                        ?t ours:containsLocation ?o .
+                        ?t ours:name ?name .	
+                        ?t a $LOCATION .
+                        ?o a ?POI .
+                        $FILTER
+                    }
+                    GROUP BY ?name
+                    ORDER BY $PATTERN(?count)
+                    LIMIT 1
+    
+                 """
+            if location.lower() == 'county':
+                LOCATION = 'ours:county'
+            else:
+                LOCATION = 'dbo:Town'
+            query = string.Template(query).substitute(FILTER=FILTER, PATTERN=pattern, LOCATION=LOCATION)
+
+            sparql.setQuery(query)
+            sparql.setReturnFormat(JSON)
+            results = sparql.query().convert()
+            print("results:", results)
+            if pattern == 'DESC':
+                output['max'] = results['results']['bindings'][0]['name']['value'], results['results']['bindings'][0]['count']['value']
+            else:
+                output['min'] = results['results']['bindings'][0]['name']['value'], results['results']['bindings'][0]['count']['value']
+        print(output)
+        return output
+
