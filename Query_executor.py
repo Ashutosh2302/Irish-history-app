@@ -13,7 +13,7 @@ class QueryExecutor:
 
         query = '''
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
         select DISTINCT ?county ?name where {
 	        ?county rdf:type ours:county .
                 ?county ours:name ?name .
@@ -31,7 +31,7 @@ class QueryExecutor:
         sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 select DISTINCT ?name ?town where { 
 	                ?town rdf:type dbo:Town .
@@ -50,7 +50,7 @@ class QueryExecutor:
 
         query = '''      
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
             PREFIX dbo: <http://dbpedia.org/ontology/>
             PREFIX gn: <http://www.geonames.org/ontology#>
@@ -107,7 +107,7 @@ class QueryExecutor:
 
         query = """
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
             PREFIX dbo: <http://dbpedia.org/ontology/>
             PREFIX gn: <http://www.geonames.org/ontology#>
@@ -139,7 +139,7 @@ class QueryExecutor:
         for pattern in ['DESC', 'ASC']:
             query = """           
                     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                    PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                    PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                     PREFIX owl: <http://www.w3.org/2002/07/owl#>
                     PREFIX dbo: <http://dbpedia.org/ontology/>
                     PREFIX gn: <http://www.geonames.org/ontology#>
