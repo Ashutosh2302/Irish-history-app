@@ -1,5 +1,8 @@
+from collections import OrderedDict
+
 import dash
-from dash import dcc
+import pandas as pd
+from dash import dcc, dash_table
 from dash import html
 from dash.dependencies import Input, Output, State
 from Query_executor import QueryExecutor
@@ -27,15 +30,15 @@ app.layout = html.Div([
 
         style={'backgroundColor': '#1d6b01', 'position': 'center', 'height': '20vh'},
         children=[
-            html.H2(children='Query Historic Knowledge Graph',
+            html.H2(children='Irish History Knowledge Graph Application',
                     style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh', 'color': 'white'})
         ]
     ),
-    html.H2(children="Question 1", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.H2(children="Discover Historical Sites According to Location", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
-        style={'backgroundColor': '#FFFF00'},
+        style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Select point of interest"),
+            html.H4(children="Get the"),
 
             dcc.Dropdown(
                 id='poi-dropdown',
@@ -43,9 +46,9 @@ app.layout = html.Div([
                 options=[{'label': poi, 'value': poi} for poi in points_of_interest],
                 value='',
                 multi=True,
-                placeholder="Select a point of interest",
+                placeholder="Select point of interests type",
             ),
-            html.H4(children="Select location type"),
+            html.H4(children="located in"),
             dcc.Dropdown(
                 id='location-dropdown',
                 style={'width': '40%'},
@@ -53,10 +56,11 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select location type",
             ),
-            html.H4(children=f"Select {query_1['location-type']}"),
+            html.H4(children=f"{query_1['location-type']}"),
             dcc.Dropdown(
                 id='location-town-county-dropdown',
                 style={'width': '40%'},
+                placeholder="Select location",
             ),
             html.Button('Submit', id='submit_1', n_clicks=0),
             html.Div(id='query1-output'),
@@ -64,9 +68,9 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Question 2", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.H2(children="Please Remove this Section Ashutosh", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
-        style={'backgroundColor': '#FFFF00'},
+        style={'backgroundColor': '#FFFFFF'},
         children=[
             html.H4(children="Select point of interest"),
 
@@ -98,22 +102,12 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Get max and min POI",
+    html.H2(children="Discover the Locations with the Max and Min Historical Points of Interest",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
-        style={'backgroundColor': '#FFFF00'},
+        style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Select point of interest"),
-
-            dcc.Dropdown(
-                id='poi-dropdown-3',
-                style={'width': '60%'},
-                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
-                value='',
-                multi=True,
-                placeholder="Select a point of interest",
-            ),
-            html.H4(children="Select location type"),
+            html.H4(children="Get the"),
             dcc.Dropdown(
                 id='location-dropdown-3',
                 style={'width': '40%'},
@@ -121,19 +115,27 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select location type",
             ),
-
+            html.H4(children="with the max and min"),
+            dcc.Dropdown(
+                id='poi-dropdown-3',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                multi=True,
+                placeholder="Select point of interest type",
+            ),
             html.Button('Submit', id='submit_3', n_clicks=0),
             html.Div(id='query3-output'),
 
         ]
     ),
 
-    html.H2(children="List names of Poi in town/county where any other poi exists",
+    html.H2(children="Find Other Historical Points of Interests near a Specific Historical Point of Interest",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
-        style={'backgroundColor': '#FFFF00'},
+        style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Select point of interest you want to know about"),
+            html.H4(children="Get the"),
 
             dcc.Dropdown(
                 id='poi-dropdown-4',
@@ -141,9 +143,9 @@ app.layout = html.Div([
                 options=[{'label': poi, 'value': poi} for poi in points_of_interest],
                 value='',
                 multi=True,
-                placeholder="Select point(s) of interest",
+                placeholder="Select point of interest type",
             ),
-            html.H4(children="Select location type"),
+            html.H4(children="in the same"),
             dcc.Dropdown(
                 id='location-dropdown-4',
                 style={'width': '40%'},
@@ -152,22 +154,22 @@ app.layout = html.Div([
                 placeholder="Select location type",
             ),
 
-            html.H4(children="Select a Poi"),
+            html.H4(children="as the point of interest"),
 
             dcc.Dropdown(
                 id='another-poi-dropdown-4',
                 style={'width': '60%'},
                 options=[{'label': poi, 'value': poi} for poi in points_of_interest],
                 value='',
-                placeholder="Select point of interest",
+                placeholder="Select a type of point of interest",
             ),
             # another dropdown for names of another poi
-            html.H4(children="Select a name"),
+            html.H4(children=""),
 
             dcc.Dropdown(
                 id='poi-choice',
                 style={'width': '60%'},
-
+                placeholder="Select a specific point of interest",
                 value='',
 
             ),
@@ -177,12 +179,12 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="List names of POI(s) associated with any given year/historicCentury/historicalPeriod",
+    html.H2(children="Discover Historical Sites According to Time",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
-        style={'backgroundColor': '#FFFF00'},
+        style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Select point of interest you want to know about"),
+            html.H4(children="Get the"),
 
             dcc.Dropdown(
                 id='poi-dropdown-5',
@@ -190,9 +192,9 @@ app.layout = html.Div([
                 options=[{'label': poi, 'value': poi} for poi in points_of_interest],
                 value='',
                 multi=True,
-                placeholder="Select point(s) of interest",
+                placeholder="Select point of interest type",
             ),
-            html.H4(children="Select location type"),
+            html.H4(children="Related to the"),
             dcc.Dropdown(
                 id='period-dropdown',
                 style={'width': '40%'},
@@ -202,14 +204,14 @@ app.layout = html.Div([
                     {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
                 ],
                 value='',
-                placeholder="Select period",
+                placeholder="Select time type",
             ),
-            html.H4(children="Pattern"),
+            html.H4(children=""),
             dcc.Dropdown(
                 id='pattern-dropdown',
                 style={'width': '40%'},
                 value='',
-                placeholder="Select pattern",
+                placeholder="Select time",
             ),
 
             html.Button('Submit', id='submit_5', n_clicks=0),
@@ -437,7 +439,35 @@ def update_output(n_clicks, poi, location_type, location):
     query_1['location'] = location
     print(f"query 1: {query_1}")
 
-    return f'output: {QueryExecutor().query_1(poi, location)}'
+    # Get results of query
+    point_of_interests = QueryExecutor().query_1(poi, location)
+    # Extract Type, Name and URI
+    poi_type = [e['thing']['value'] for e in point_of_interests['results']['bindings']]
+    # Format Type
+    for i in range(0, len(poi_type), 1):
+        print()
+        poi_type[i] = poi_type[i].split("#", 1)[1]
+    poi_name = [e['name']['value'] for e in point_of_interests['results']['bindings']]
+    poi_uri = [e['place']['value'] for e in point_of_interests['results']['bindings']]
+
+    # Format the data
+    data = OrderedDict(
+        [
+            ("Type", poi_type),
+            ("Name", poi_name),
+            ("Uri", poi_uri)
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
 
 
 # callback to chain the dropdowns
