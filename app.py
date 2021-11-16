@@ -23,6 +23,12 @@ location = ['Town', 'County']
 data = QueryExecutor().loading_default_data()
 counties = data[0]
 towns = data[1]
+museums = data[2]
+landmarks = data[3]
+walledTowns = data[4]
+pilgrimPaths = data[5]
+
+
 
 app.layout = html.Div([
 
@@ -167,12 +173,11 @@ app.layout = html.Div([
             html.H4(children=""),
 
             dcc.Dropdown(
-                id='poi-choice',
+                id='choice-poi-dropdown-4',
                 style={'width': '60%'},
-                placeholder="Select a specific point of interest",
-                value='',
+                placeholder="Select point of interest",
+                ),
 
-            ),
             html.Button('Submit', id='submit_4', n_clicks=0),
             html.Div(id='query4-output'),
 
@@ -525,17 +530,41 @@ def update_output(n_clicks, poi, location_type):
     State('poi-dropdown-4', 'value'),
     State('location-dropdown-4', 'value'),
     State('another-poi-dropdown-4', 'value'),
+    State('choice-poi-dropdown-4', 'value'),
     prevent_initial_call=True
 )
-def update_output(n_clicks, poi, location_type, another_poi):
+
+def update_output(n_clicks, poi, location_type, another_poi, choice_poi):
+
     query_4['poi'] = poi
     query_4['location-type'] = location_type
     query_4['another_poi'] = another_poi
+    query_4['name_of_another_poi'] = choice_poi
 
     # TODO: name of another poi using sparql query
 
     print(f"query 4: {query_4}")
-    return f'POI: {poi}, location type: {location_type}, another poi: {another_poi}'
+    #output = QueryExecutor.query_4(poi, location_type, another_poi, choice_poi)
+    #return f'{poi}'
+    return f'output: {QueryExecutor().query_4(poi, location_type, choice_poi)}'
+    #return f'Other POIs in same location as selected POI: {output["otherPOIs"]}'
+    #return f'POI: {poi}, location type: {location_type}, another poi: {another_poi}, chosen poi: {choice_poi}'
+    
+# callback to chain the dropdowns
+@app.callback(
+    dash.dependencies.Output('choice-poi-dropdown-4', 'options'),
+    [dash.dependencies.Input('another-poi-dropdown-4', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'Museum':
+        return museums
+    elif value == 'Landmarks':
+        return landmarks
+    elif value == 'Walled Towns':
+        return walledTowns
+    
+    else: return pilgrimPaths
+    #return counties if value == 'County' else towns
 
 
 @app.callback(
