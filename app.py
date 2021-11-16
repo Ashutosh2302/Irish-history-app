@@ -28,8 +28,6 @@ landmarks = data[3]
 walledTowns = data[4]
 pilgrimPaths = data[5]
 
-
-
 app.layout = html.Div([
 
     html.Div(
@@ -46,7 +44,7 @@ app.layout = html.Div([
         children=[
             html.H4(children="Get the"),
 
-            dcc.Dropdown(
+        dcc.Dropdown(
                 id='poi-dropdown',
                 style={'width': '60%'},
                 options=[{'label': poi, 'value': poi} for poi in points_of_interest],
@@ -146,7 +144,7 @@ app.layout = html.Div([
                 placeholder="Select point of interest",
                 ),
 
-            ),
+
             html.H4(children=""),
             html.Button('Submit', id='submit_4', n_clicks=0),
             html.Div(id='query4-output'),
