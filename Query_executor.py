@@ -6,7 +6,7 @@ class QueryExecutor:
     
     def __init__(self):
         self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory#'
-        self.endPoint = 'http://localhost:7200/repositories/kde-repo'
+        self.endPoint = 'http://localhost:7200/repositories/KDE-repo'   #Change to update to local machine repository name
 
     def loading_default_data(self):
 
@@ -252,6 +252,73 @@ class QueryExecutor:
 
         listOfTypes = listOfTypes + '))'
         return listOfTypes
+
+    def describe(self, locationType, location):
+        sparql = SPARQLWrapper(self.endPoint)
+        print("test", locationType)
+        if(locationType== 'Museum'):
+            query="""
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT *  WHERE {
+                    <$location> a dbo:Museum .
+    				<$location> ours:blurb ?blurb .
+    				<$location> ours:phone ?phone .
+    				<$location> ours:website ?website .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+            """
+        elif(locationType == 'Landmarks'):
+            query="""
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT *  WHERE {
+                    <$location> a ours:landmark .
+    				<$location> ours:website ?website .
+    				<$location> ours:propertyHistory ?propertyHistory .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+            """
+        elif(locationType == 'Walled Towns'):
+            query="""
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT *  WHERE {
+                    <$location> a ours:walledTown .
+    				<$location> ours:category ?category .
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+            """
+        else:
+
+            query = """
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT *  WHERE {
+                    <$location> a ours:pilgrimPath .
+    				<$location> ours:duration ?duration .
+    				<$location> ours:difficulty ?difficulty
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+            """
+        query = string.Template(query).substitute(location=location)
+        print(query)
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
 
     def query_1(self, entityType, location):
         FILTER = QueryExecutor().create_filter(entityType, 'thing')

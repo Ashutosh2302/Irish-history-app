@@ -7,6 +7,7 @@ from dash import html
 from dash.dependencies import Input, Output, State
 from Query_executor import QueryExecutor
 
+describe = {'poi' : '', 'location-type': '', 'location': ''}
 query_1 = {'poi': '', 'location-type': '', 'location': ''}
 query_2 = {'poi': '', 'location-type': '', 'location': ''}
 query_3 = {'poi': '', 'location-type': ''}
@@ -56,6 +57,33 @@ app.layout = html.Div([
                     style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh', 'color': 'white'})
         ]
     ),
+
+    html.H2(children="Give details about a specific point of interest", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.Div(
+     style={'backgroundColor': '#FFFFFF'},
+     children=[html.H4(children="Describe the"),
+            dcc.Dropdown(
+                id='describe-poi-dropdown-type',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                placeholder="Select point of interest",
+            ),
+            html.H4(children='called'),
+            # another dropdown for names of another poi
+            html.H4(children=""),
+            dcc.Dropdown(
+                id='describe-poi-names',
+                style={'width': '60%'},
+                value='',
+            ),
+            html.H4(children=""),
+            html.Button('Submit', id='describe-submit', n_clicks=0),
+            html.Div(id='describe-output'),
+     ]
+    ),
+
+
     html.H2(children="Discover the historical points of interest according to location", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -404,6 +432,108 @@ app.layout = html.Div([
 
 ])
 
+@app.callback(
+    Output('describe-output', 'children'),
+    Input('describe-submit', 'n_clicks'),
+    State('describe-poi-dropdown-type', 'value'),
+    State('describe-poi-names', 'value'),
+    prevent_initial_call=True
+)
+def update_output(n_clicks, location_type, location):
+    describe['location-type'] = location_type
+    describe['location'] = location
+    details = QueryExecutor().describe(location_type, location)
+    if(location_type == 'Museum'):
+        museum_blurb = [e['blurb']['value'] for e in details['results']['bindings']]
+        museum_phone = [e['phone']['value'] for e in details['results']['bindings']]
+        museum_website = [e['website']['value'] for e in details['results']['bindings']]
+        data = OrderedDict(
+        [
+            ("Blurb", museum_blurb),
+            ("Phone", museum_phone),
+            ("Website", museum_website)
+        ]
+        )
+        df = pd.DataFrame(data)
+        data = df.to_dict('records')
+        columns = [{'id': c, 'name': c} for c in df.columns]
+        return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_data={ 'whiteSpace': 'normal', 'height': 'auto', },
+        style_cell={'textAlign': 'left'})
+
+    elif(location_type == 'Landmarks'):
+
+        landmark_website = [e['website']['value'] for e in details['results']['bindings']]
+        lanmark_history = [e['propertyHistory']['value'] for e in details['results']['bindings']]
+        data = OrderedDict(
+        [
+            ("Website", landmark_website),
+            ("Property History", lanmark_history),
+        ]
+        )
+        df = pd.DataFrame(data)
+        data = df.to_dict('records')
+        columns = [{'id': c, 'name': c} for c in df.columns]
+        return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_data={ 'whiteSpace': 'normal', 'height': 'auto', },
+        style_cell={'textAlign': 'left'})
+
+    elif(location_type == 'Walled Towns'):
+
+        walledTown_category = [e['category']['value'] for e in details['results']['bindings']]
+        data = OrderedDict(
+        [
+            ("Category", walledTown_category),
+        ]
+        )
+        df = pd.DataFrame(data)
+        data = df.to_dict('records')
+        columns = [{'id': c, 'name': c} for c in df.columns]
+        return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_data={ 'whiteSpace': 'normal', 'height': 'auto', },
+        style_cell={'textAlign': 'left'})
+
+    else: 
+        pilgrimPath_duration = [e['duration']['value'] for e in details['results']['bindings']]
+        pilgrimPath_difficulty = [e['difficulty']['value'] for e in details['results']['bindings']]
+        data = OrderedDict(
+        [
+            ("Duration", pilgrimPath_duration),
+            ("Difficulty", pilgrimPath_difficulty),
+        ]
+        )
+        df = pd.DataFrame(data)
+        data = df.to_dict('records')
+        columns = [{'id': c, 'name': c} for c in df.columns]
+        return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_data={ 'whiteSpace': 'normal', 'height': 'auto', },
+        style_cell={'textAlign': 'left'})
+
+@app.callback(
+    dash.dependencies.Output('describe-poi-names', 'options'),
+    [dash.dependencies.Input('describe-poi-dropdown-type', 'value')],
+    prevent_initial_call=True)
+def set_poi_options(value):
+    if value == 'Museum':
+        return museums
+    elif value == 'Landmarks':
+        return landmarks
+    elif value == 'Walled Towns':
+        return walledTowns
+    else:
+        return pilgrimPaths
 
 @app.callback(
     Output('query1-output', 'children'),
