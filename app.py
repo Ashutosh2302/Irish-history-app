@@ -409,14 +409,14 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select location type",
             ),
-            html.H4(children=""),
-            dcc.Dropdown(
-                id='location-town-county-dropdown-9',
-                style={'width': '40%'},
-                options=[{'label': l, 'value': l} for l in location],
-                value='',
-                placeholder="Select location type",
-            ),
+            # html.H4(children=""),
+            # dcc.Dropdown(
+            #     id='location-town-county-dropdown-9',
+            #     style={'width': '40%'},
+            #     options=[{'label': l, 'value': l} for l in location],
+            #     value='',
+            #     placeholder="Select location type",
+            # ),
             html.H4(children="and associated with the"),
             dcc.Dropdown(
                 id='period-dropdown-9',
@@ -430,14 +430,14 @@ app.layout = html.Div([
                 placeholder="Select period",
             ),
 
-            html.H4(children=""),
-            dcc.Dropdown(
-                id='period-pattern-9',
-                style={'width': '40%'},
-
-                value='',
-                placeholder="Select period",
-            ),
+            # html.H4(children=""),
+            # dcc.Dropdown(
+            #     id='period-pattern-9',
+            #     style={'width': '40%'},
+            #
+            #     value='',
+            #     placeholder="Select period",
+            # ),
             html.H4(children=""),
             html.Button('Submit', id='submit_9', n_clicks=0),
             html.Div(id='query9-output'),
@@ -838,7 +838,7 @@ def update_output(n_clicks, poi, period_type, another_poi):
     print("another_poi: ", another_poi)
 
     point_of_interests = QueryExecutor().query_7(poi, period_type, another_poi)
-    poi_type = [e['POI']['value'] for e in point_of_interests['results']['bindings']]
+    poi_type = [e['POI1']['value'] for e in point_of_interests['results']['bindings']]
     print(poi_type)
 
     # Format Type
@@ -970,35 +970,35 @@ def set_cities_options(value):
     Input('submit_9', 'n_clicks'),
     State('poi-dropdown-9', 'value'),
     State('location-dropdown-9', 'value'),
-    State('location-town-county-dropdown-9', 'value'),
+
     State('period-dropdown-9', 'value'),
-    State('period-pattern-9', 'value'),
+
 
     prevent_initial_call=True
 )
-def update_output(n_clicks, poi, location_type, location, period, period_pattern):
+def update_output(n_clicks, poi, location_type, period):
     print(poi, location_type, location, period)
-    results = QueryExecutor().query_9(poi, location, period_pattern)
+    results = QueryExecutor().query_9(poi, location_type, period)
     return f'Count: {results["results"]["bindings"][0]["count"]["value"]}'
 
-@app.callback(
-    dash.dependencies.Output('location-town-county-dropdown-9', 'options'),
-    [dash.dependencies.Input('location-dropdown-9', 'value')],
-    prevent_initial_call=True)
-def set_cities_options(value):
-    return counties if value == 'County' else towns
-
-@app.callback(
-    dash.dependencies.Output('period-pattern-9', 'options'),
-    [dash.dependencies.Input('period-dropdown-9', 'value')],
-    prevent_initial_call=True)
-def set_cities_options(value):
-    if value == 'year':
-        return years[2:]
-    elif value == 'historicCentury':
-        return historicCenturies
-    else:
-        return historicPeriods
+# @app.callback(
+#     dash.dependencies.Output('location-town-county-dropdown-9', 'options'),
+#     [dash.dependencies.Input('location-dropdown-9', 'value')],
+#     prevent_initial_call=True)
+# def set_cities_options(value):
+#     return counties if value == 'County' else towns
+#
+# @app.callback(
+#     dash.dependencies.Output('period-pattern-9', 'options'),
+#     [dash.dependencies.Input('period-dropdown-9', 'value')],
+#     prevent_initial_call=True)
+# def set_cities_options(value):
+#     if value == 'year':
+#         return years[2:]
+#     elif value == 'historicCentury':
+#         return historicCenturies
+#     else:
+#         return historicPeriods
 
 
 if __name__ == '__main__':
