@@ -224,14 +224,14 @@ class QueryExecutor:
 
         yearsForDropdown = []
         for i in range(len(yearNames)):
-            yearsForDropdown.append({'label': yearNames[i], 'value': yearIRIs[i]})
+            yearsForDropdown.append({'label': yearNames[i].split('#')[-1], 'value': yearIRIs[i]})
             
             
         return countiesForDropdown, townsForDropdown, museumsForDropdown, landmarksForDropdown, walledTownsForDropdown, pilgrimPathsForDropdown, historicPeriodsForDropdown, historicCenturiesForDropdown, yearsForDropdown
 
     @staticmethod
     def create_filter(entityType, varibale):
-        print(entityType);
+        print(entityType)
         listOfTypes = f'FILTER (?{varibale} IN ('
         numTypes = 0
 
@@ -265,7 +265,7 @@ class QueryExecutor:
 
             SELECT *  WHERE {
                 ?place a ?thing .
-                ?place ours:name ?name .
+                ?place dbo:name ?name .
                 ?place gn:locatedIn <$LOCATION>
 
                 $FILTER
@@ -275,7 +275,7 @@ class QueryExecutor:
         query = string.Template(query).substitute(
             LOCATION=location,
             FILTER=FILTER)
-
+        print(query)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()

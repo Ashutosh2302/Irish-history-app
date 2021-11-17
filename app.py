@@ -18,7 +18,7 @@ query_7 = {'poi': '', 'period-type': '', 'another_poi': '', 'name_of_another_poi
 app = dash.Dash(__name__)
 app.title = 'Irish History'
 points_of_interest = ['Pilgrim Path', 'Museum', 'Walled Towns', 'Landmarks']
-location = ['Town', 'County']
+location = ['Locality', 'County']
 
 data = QueryExecutor().loading_default_data()
 counties = data[0]
@@ -28,11 +28,11 @@ landmarks = data[3]
 walledTowns = data[4]
 pilgrimPaths = data[5]
 historicPeriods = data[6]
-print(historicPeriods)
+
 historicCenturies = data[7]
-print(historicCenturies)
+
 years = data[8]
-print(years)
+
 
 app.layout = html.Div([
 
@@ -423,7 +423,7 @@ def update_output(n_clicks, poi, location_type, location):
 
     # Get results of query
     point_of_interests = QueryExecutor().query_1(poi, location)
-    # Extract Type, Name and URI
+    #Extract Type, Name and URI
     poi_type = [e['thing']['value'] for e in point_of_interests['results']['bindings']]
     # Format Type
     for i in range(0, len(poi_type), 1):
@@ -502,7 +502,8 @@ def update_output(n_clicks, poi, location_type, another_poi, choice_poi):
     return f'output: {QueryExecutor().query_4(poi, location_type, choice_poi)}'
     #return f'Other POIs in same location as selected POI: {output["otherPOIs"]}'
     #return f'POI: {poi}, location type: {location_type}, another poi: {another_poi}, chosen poi: {choice_poi}'
-    
+
+
 # callback to chain the dropdowns
 @app.callback(
     dash.dependencies.Output('choice-poi-dropdown-4', 'options'),
@@ -515,9 +516,9 @@ def set_cities_options(value):
         return landmarks
     elif value == 'Walled Towns':
         return walledTowns
-    
-    else: return pilgrimPaths
-    #return counties if value == 'County' else towns
+    else:
+        return pilgrimPaths
+
 
 
 @app.callback(
@@ -533,7 +534,20 @@ def update_output(n_clicks, poi, period, pattern):
     query_5['associated-with'] = period
     query_5['pattern'] = ''
     print(f"query 5: {query_5}")
-    return f'POI: {poi}, associated_with: {period}, pattern: ""'
+    return f'POI: {poi}, associated_with: {period}, pattern: {pattern}'
+
+
+@app.callback(
+    dash.dependencies.Output('pattern-dropdown', 'options'),
+    [dash.dependencies.Input('period-dropdown', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'year':
+        return years[2:]
+    elif value == 'historicCentury':
+        return historicCenturies
+    else:
+        return historicPeriods
 
 
 @app.callback(
@@ -569,6 +583,21 @@ def update_output(n_clicks, poi, period_type, another_poi):
     print(f"query 7: {query_7}")
     return f'POI: {poi}, period type: {period_type}, another poi: {another_poi}'
 
+# callback to chain the dropdowns
+@app.callback(
+    dash.dependencies.Output('poi-names', 'options'),
+    [dash.dependencies.Input('another-poi-dropdown-7', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'Museum':
+        return museums
+    elif value == 'Landmarks':
+        return landmarks
+    elif value == 'Walled Towns':
+        return walledTowns
+    else:
+        return pilgrimPaths
+
 
 @app.callback(
     Output('query8-output', 'children'),
@@ -583,6 +612,20 @@ def update_output(n_clicks, poi, period_type, another_poi):
 def update_output(n_clicks, poi, location_type, location, period):
     print(poi, location_type, location, period)
     return f'POI: {poi}, location type: {location_type}, location: {location} period type: {period}'
+
+ #callback to chain the dropdowns
+@app.callback(
+    dash.dependencies.Output('period-pattern-8', 'options'),
+    [dash.dependencies.Input('period-dropdown-8', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'year':
+        return years[2:]
+    elif value == 'historicCentury':
+        return historicCenturies
+    else:
+        return historicPeriods
+
 
 
 @app.callback(
@@ -606,6 +649,21 @@ def set_cities_options(value):
 def update_output(n_clicks, poi, location_type, period, another_poi):
     print(poi, location_type, location, period)
     return f'POI: {poi}, location type: {location_type}, period type: {period}, another_poi: {another_poi}'
+
+@app.callback(
+    dash.dependencies.Output('poi-names-9', 'options'),
+    [dash.dependencies.Input('another-poi-dropdown-9', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'Museum':
+        return museums
+    elif value == 'Landmarks':
+        return landmarks
+    elif value == 'Walled Towns':
+        return walledTowns
+    else:
+        return pilgrimPaths
+
 
 
 if __name__ == '__main__':
