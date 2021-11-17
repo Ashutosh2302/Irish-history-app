@@ -22,17 +22,29 @@ location = ['Locality', 'County']
 
 data = QueryExecutor().loading_default_data()
 counties = data[0]
+#print(counties);
+print("\n")
 towns = data[1]
+#print(towns);
+print("\n")
 museums = data[2]
+##print(museums);
+print("\n")
 landmarks = data[3]
+#print(landmarks);
+print("\n")
 walledTowns = data[4]
+#print(walledTowns);
+print("\n")
 pilgrimPaths = data[5]
+print(pilgrimPaths);
+print("\n")
 historicPeriods = data[6]
-
+#print(historicPeriods)
 historicCenturies = data[7]
-
+#print(historicCenturies)
 years = data[8]
-
+#print(years)
 
 app.layout = html.Div([
 
@@ -422,16 +434,29 @@ def update_output(n_clicks, poi, location_type, location):
     print(f"query 1: {query_1}")
 
     # Get results of query
+    print(poi, location)
+    print("HERE: ")
+
+
     point_of_interests = QueryExecutor().query_1(poi, location)
-    #Extract Type, Name and URI
+    #return f'output: {point_of_interests}'
+    # Extract Type, Name and URI
     poi_type = [e['thing']['value'] for e in point_of_interests['results']['bindings']]
+    print(poi_type)
+
     # Format Type
     for i in range(0, len(poi_type), 1):
         print()
-        poi_type[i] = poi_type[i].split("#", 1)[1]
+        if "dbpedia.org" in poi_type[i]: 
+            poi_type[i] = poi_type[i].split("http://dbpedia.org/ontology/", 1)[1]
+        else:  poi_type[i] = poi_type[i].split("#", 1)[1]
+
     poi_name = [e['name']['value'] for e in point_of_interests['results']['bindings']]
     poi_uri = [e['place']['value'] for e in point_of_interests['results']['bindings']]
 
+    print("name", poi_name)
+    print(poi_uri)
+    print(poi_type)
     # Format the data
     data = OrderedDict(
         [

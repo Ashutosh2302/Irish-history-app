@@ -5,7 +5,7 @@ import string
 class QueryExecutor:
     
     def __init__(self):
-        self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory'
+        self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory#'
         self.endPoint = 'http://localhost:7200/repositories/KDE-project'
 
     def loading_default_data(self):
@@ -14,10 +14,12 @@ class QueryExecutor:
 
         query = '''
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+        PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+        PREFIX dbo: <http://dbpedia.org/ontology/>
+
         select DISTINCT ?county ?name where {
 	        ?county rdf:type ours:county .
-                ?county ours:name ?name .
+                ?county dbo:name ?name .
             }
         ORDER BY ASC(UCASE(str(?name)))
         '''
@@ -36,7 +38,7 @@ class QueryExecutor:
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 select DISTINCT ?name ?town where { 
 	                ?town rdf:type ours:locality .
-                    ?town ours:name ?name .
+                    ?town dbo:name ?name .
                 }
                 ORDER BY ASC(UCASE(str(?name)))
                 '''
@@ -51,7 +53,7 @@ class QueryExecutor:
         sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
@@ -71,14 +73,14 @@ class QueryExecutor:
         sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
 
                 SELECT ?landmark ?name WHERE {
                     ?landmark a ours:landmark .
-                    ?landmark ours:name ?name .
+                    ?landmark dbo:name ?name .
                     }
                 ORDER BY ASC(UCASE(str(?name)))
                 '''
@@ -91,14 +93,14 @@ class QueryExecutor:
         sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
 
                 SELECT ?walledTown ?name WHERE {
                     ?walledTown a ours:walledTown .
-                    ?walledTown ours:name ?name .
+                    ?walledTown dbo:name ?name .
                     }
                 ORDER BY ASC(UCASE(str(?name)))
                 '''
@@ -111,14 +113,14 @@ class QueryExecutor:
         sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
 
                SELECT ?pilgrimPath ?name WHERE {
                    ?pilgrimPath a ours:pilgrimPath .
-                   ?pilgrimPath ours:name ?name .
+                   ?pilgrimPath dbo:name ?name .
                    }
                 ORDER BY ASC(UCASE(str(?name)))
                 '''
@@ -297,7 +299,7 @@ class QueryExecutor:
                     
                     SELECT ?name (COUNT(?o) as ?count) WHERE {
                         ?t ours:containsLocation ?o .
-                        ?t ours:name ?name .	
+                        ?t dbo:name ?name .	
                         ?t a $LOCATION .
                         ?o a ?POI .
                         $FILTER
@@ -305,7 +307,6 @@ class QueryExecutor:
                     GROUP BY ?name
                     ORDER BY $PATTERN(?count)
                     LIMIT 1
-    
                  """
             if location.lower() == 'county':
                 LOCATION = 'ours:county'
@@ -335,7 +336,7 @@ class QueryExecutor:
         
         query = """           
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
@@ -343,7 +344,7 @@ class QueryExecutor:
                     ?place a ?POI .
                     ?place gn:locatedIn ?town .
                     ?town a $LOCATION .
-                    ?place ours:name ?name .
+                    ?place dbo:name ?name .
                     <$otherPoiInLocation2> gn:locatedIn ?town .
                     $FILTER
                     }
@@ -366,8 +367,11 @@ class QueryExecutor:
     
 
     #def query_4(self, p):
-#poiType = ['Pilgrim Path', 'Walled Towns']
-#debug = QueryExecutor()
+poiType = ['Pilgrim Path', 'Walled Towns']
+debug = QueryExecutor()
 #debug.query_4(poiType, 'County', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive')
-#QueryExecutor().query_4( poiType, 'County', 'Landmarks', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive');
+#QueryExecutor().query_4( poiType, 'County', 'Landmarks', 'http://www.semanticweb.org/ontology/irishhistory##pointOfinterestAbbey%20Theatre%20Archive');
 
+secondPOI = ['Pilgrim Path']
+location = 'http://www.semanticweb.org/ontology/irishhistory#countyDonegal'
+#debug.query_1(secondPOI, location)
