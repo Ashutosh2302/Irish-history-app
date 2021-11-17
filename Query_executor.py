@@ -135,10 +135,10 @@ class QueryExecutor:
             PREFIX dbo: <http://dbpedia.org/ontology/>
             PREFIX gn: <http://www.geonames.org/ontology#>
             
-            SELECT ?period ?name WHERE {
-                ?period a ?timePeriod .
-                ?period ours:name ?name
-                FILTER(?timePeriod IN (ours:HistoricalPeriod, dbo:HistoricalPeriod))
+            SELECT DISTINCT ?period ?name WHERE {
+            ?period a ?timePeriod .
+            ?period dbo:name ?name
+            FILTER(?timePeriod IN (ours:HistoricalPeriod, dbo:HistoricalPeriod))
             }
             ORDER BY ASC(UCASE(str(?name)))
             '''
@@ -146,8 +146,49 @@ class QueryExecutor:
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         historic_periods = sparql.query().convert()
-        historic_period_names = [e['name']['value'] for e in towns['results']['bindings']]
-        historic_period_IRIs = [e['town']['value'] for e in towns['results']['bindings']]
+        historic_period_names = [e['name']['value'] for e in historic_periods['results']['bindings']]
+        historic_period_IRIs = [e['period']['value'] for e in historic_periods['results']['bindings']]
+
+        query = '''      
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+            PREFIX gn: <http://www.geonames.org/ontology#>
+            
+            SELECT DISTINCT ?century ?name WHERE {
+            ?century a ?centuryType .
+            ?century dbo:name ?name
+            FILTER(?centuryType IN (ours:historicCentury))
+            }
+            ORDER BY ASC(UCASE(str(?name)))
+            '''
+
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        historicCenturies = sparql.query().convert()
+        historicCenturyNames = [e['name']['value'] for e in historicCenturies['results']['bindings']]
+        historicCenturyIRIs = [e['century']['value'] for e in historicCenturies['results']['bindings']]
+
+        query = '''      
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            PREFIX dbo: <http://dbpedia.org/ontology/>
+            PREFIX gn: <http://www.geonames.org/ontology#>
+            
+           SELECT DISTINCT ?year ?name WHERE {
+            ?year a dbo:Year .
+ 	        #?year dbo:name ?name   
+            }
+            ORDER BY ASC(UCASE(str(?name)))
+            '''
+
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        years = sparql.query().convert()
+        yearNames = [e['year']['value'] for e in years['results']['bindings']]     #No name for years yet
+        yearIRIs = [e['year']['value'] for e in years['results']['bindings']]
 
         townsForDropdown = []
         for i in range(len(townNames)):
@@ -171,10 +212,22 @@ class QueryExecutor:
             
         pilgrimPathsForDropdown = []
         for i in range(len(pilgrimPathNames)):
-            pilgrimPathsForDropdown.append({'label': pilgrimPathNames[i], 'value': pilgrimPathIRIs[i]})      
+            pilgrimPathsForDropdown.append({'label': pilgrimPathNames[i], 'value': pilgrimPathIRIs[i]})     
+
+        historicPeriodsForDropdown = []
+        for i in range(len(historic_period_names)):
+            historicPeriodsForDropdown.append({'label': historic_period_names[i], 'value': historic_period_IRIs[i]}) 
+
+        historicCenturiesForDropdown = []
+        for i  in range(len(historicCenturyNames)):
+            historicCenturiesForDropdown.append({'label': historicCenturyNames[i], 'value': historicCenturyIRIs[i]})
+
+        yearsForDropdown = []
+        for i in range(len(yearNames)):
+            yearsForDropdown.append({'label': yearNames[i], 'value': yearIRIs[i]})
             
             
-        return countiesForDropdown, townsForDropdown, museumsForDropdown, landmarksForDropdown, walledTownsForDropdown, pilgrimPathsForDropdown
+        return countiesForDropdown, townsForDropdown, museumsForDropdown, landmarksForDropdown, walledTownsForDropdown, pilgrimPathsForDropdown, historicPeriodsForDropdown, historicCenturiesForDropdown, yearsForDropdown
 
     @staticmethod
     def create_filter(entityType, varibale):

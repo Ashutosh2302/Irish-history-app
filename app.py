@@ -27,6 +27,12 @@ museums = data[2]
 landmarks = data[3]
 walledTowns = data[4]
 pilgrimPaths = data[5]
+historicPeriods = data[6]
+print(historicPeriods)
+historicCenturies = data[7]
+print(historicCenturies)
+years = data[8]
+print(years)
 
 app.layout = html.Div([
 
