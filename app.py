@@ -56,7 +56,7 @@ app.layout = html.Div([
                     style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh', 'color': 'white'})
         ]
     ),
-    html.H2(children="Discover Historical Sites According to Location", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
+    html.H2(children="Discover the historical points of interest according to location", style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
         children=[
@@ -91,7 +91,7 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Discover how many Historical Points of Interest are in a Location",
+    html.H2(children="Discover the number of historical points of interest according to location",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -122,7 +122,8 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Find Other Historical Points of Interests near a Specific Historical Point of Interest",
+    html.H2(children="Discover other historical points of interests in the same location as a specific historical "
+                     "point of interest",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -172,7 +173,7 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Discover Historical Sites According to Time",
+    html.H2(children="Discover the historical points of interest related to time",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -213,12 +214,22 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Find the time period with Max and Min Historical Points of Interest ",
+    html.H2(children="Discover the number of historical points of interest related to time",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Get the"),
+
+            html.H4(children="Get the number of"),
+            dcc.Dropdown(
+                id='poi-dropdown-6',
+                style={'width': '60%'},
+                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
+                value='',
+                multi=True,
+                placeholder="Select point(s) of interest",
+            ),
+            html.H4(children="Related to"),
             dcc.Dropdown(
                 id='period-dropdown-6',
                 style={'width': '40%'},
@@ -230,15 +241,6 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select period",
             ),
-            html.H4(children="with max and min"),
-            dcc.Dropdown(
-                id='poi-dropdown-6',
-                style={'width': '60%'},
-                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
-                value='',
-                multi=True,
-                placeholder="Select point(s) of interest",
-            ),
             html.H4(children=""),
             html.Button('Submit', id='submit_6', n_clicks=0),
             html.Div(id='query6-output'),
@@ -246,8 +248,7 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Discover other Historical Points of Interest in the same time period as a Specific Historical Point "
-                     "of Interest",
+    html.H2(children="Discover other historical points of interests in the same time as a specific historical point of interest",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -300,7 +301,7 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Discover Historical Points of Interest located in a region associated with a specific time period",
+    html.H2(children="Discover historical points of interest in the same location and associated with the same time",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
@@ -356,14 +357,13 @@ app.layout = html.Div([
         ]
     ),
 
-
     html.H2(
-        children="Discover Points of interest located in a region associated with a time period same as a Specific Point of Interest",
+        children="Discover the number of historical points of interest in a location and associated with a time",
         style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Get the"),
+            html.H4(children="Get the number of"),
 
             dcc.Dropdown(
                 id='poi-dropdown-9',
@@ -394,23 +394,7 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select period",
             ),
-            html.H4(children="of"),
 
-            dcc.Dropdown(
-                id='another-poi-dropdown-9',
-                style={'width': '60%'},
-                options=[{'label': poi, 'value': poi} for poi in points_of_interest],
-                value='',
-                placeholder="Select point of interest",
-            ),
-            # another dropdown for names of another poi
-            html.H4(children=""),
-            dcc.Dropdown(
-                id='poi-names-9',
-                style={'width': '60%'},
-                value='',
-
-            ),
             html.H4(children=""),
             html.Button('Submit', id='submit_9', n_clicks=0),
             html.Div(id='query9-output'),
@@ -804,7 +788,7 @@ def set_cities_options(value):
     State('poi-dropdown-9', 'value'),
     State('location-dropdown-9', 'value'),
     State('period-dropdown-9', 'value'),
-    State('another-poi-dropdown-9', 'value'),
+
 
     prevent_initial_call=True
 )
@@ -812,19 +796,19 @@ def update_output(n_clicks, poi, location_type, period, another_poi):
     print(poi, location_type, location, period)
     return f'POI: {poi}, location type: {location_type}, period type: {period}, another_poi: {another_poi}'
 
-@app.callback(
-    dash.dependencies.Output('poi-names-9', 'options'),
-    [dash.dependencies.Input('another-poi-dropdown-9', 'value')],
-    prevent_initial_call=True)
-def set_cities_options(value):
-    if value == 'Museum':
-        return museums
-    elif value == 'Landmarks':
-        return landmarks
-    elif value == 'Walled Towns':
-        return walledTowns
-    else:
-        return pilgrimPaths
+# @app.callback(
+#     dash.dependencies.Output('poi-names-9', 'options'),
+#     [dash.dependencies.Input('another-poi-dropdown-9', 'value')],
+#     prevent_initial_call=True)
+# def set_cities_options(value):
+#     if value == 'Museum':
+#         return museums
+#     elif value == 'Landmarks':
+#         return landmarks
+#     elif value == 'Walled Towns':
+#         return walledTowns
+#     else:
+#         return pilgrimPaths
 
 
 
