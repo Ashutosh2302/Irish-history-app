@@ -333,7 +333,7 @@ class QueryExecutor:
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
-                SELECT ?place ?name WHERE {
+                SELECT ?place ?POI ?name WHERE {
                     ?place a ?POI .
                     ?place gn:locatedIn ?town .
                     ?town a $LOCATION .
@@ -358,6 +358,71 @@ class QueryExecutor:
         #if (len(results['results']['bindings']) > 0): output['otherPOIs'] = [e['place']['value'] for e in results['results']['bindings']]
         #return output
     
+    def query_5(self, entityType, selectedDate):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        output = { 'placesOfInterest' : ''}
+        
+        query = """           
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT ?place ?POI ?name WHERE {
+                    ?place a ?POI .
+                    ?place ours:associatedWith <$selectedDate> .
+                    ?place dbo:name ?name .
+                    $FILTER
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                """
+        query = string.Template(query).substitute(FILTER=FILTER, selectedDate=selectedDate)
+        print(query);
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
+
+    def query_7(self, entityType, timePeriodType, anotherPoiInPeriod):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
+
+        print(timePeriodType)
+
+        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        output = { 'placesOfInterest' : ''}
+        
+        #museums,landmarks only associated to year,century or both
+        #pilgrimPath, walledTown are only historical periods
+
+        query = """           
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT DISTINCT ?place ?POI ?name WHERE {
+                    ?place a ?POI .
+                    ?place ours:associatedWith ?somePeriod .
+                    ?somePeriod a $timePeriod .
+                    ?somePeriod ours:associatedWith <$selectedPOI> .
+                    ?place dbo:name ?name .
+                    $FILTER
+                    }
+                ORDER BY ASC(UCASE(str(?name)))
+                """
+        if timePeriodType.lower() == 'historicalperiod':
+            subPeriod = 'dbo:HistoricalPeriod'
+        elif timePeriodType.lower() == 'year':
+            subPeriod = 'dbo:Year'
+        else:
+            subPeriod = 'ours:historicCentury'
+        query = string.Template(query).substitute(FILTER=FILTER, timePeriod = subPeriod, selectedPOI=anotherPoiInPeriod)
+        print(query);
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
 
     #def query_4(self, p):
 poiType = ['Pilgrim Path', 'Walled Towns']
