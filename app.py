@@ -550,10 +550,48 @@ def update_output(n_clicks, poi, location_type, another_poi, choice_poi):
 
     # TODO: name of another poi using sparql query
 
-    print(f"query 4: {query_4}")
+    #print(f"query 4: {query_4}")
     #output = QueryExecutor.query_4(poi, location_type, another_poi, choice_poi)
     #return f'{poi}'
-    return f'output: {QueryExecutor().query_4(poi, location_type, choice_poi)}'
+
+    point_of_interests = QueryExecutor().query_4(poi, location_type, choice_poi)
+
+    #return f'output: {point_of_interests}'
+    # Extract Type, Name and URI
+    poi_type = [e['POI']['value'] for e in point_of_interests['results']['bindings']]
+    print(poi_type)
+
+    # Format Type
+    for i in range(0, len(poi_type), 1):
+        print()
+        if "dbpedia.org" in poi_type[i]: 
+            poi_type[i] = poi_type[i].split("http://dbpedia.org/ontology/", 1)[1]
+        else:  poi_type[i] = poi_type[i].split("#", 1)[1]
+
+    poi_name = [e['name']['value'] for e in point_of_interests['results']['bindings']]
+    poi_uri = [e['place']['value'] for e in point_of_interests['results']['bindings']]
+
+    print("name", poi_name)
+    print(poi_uri)
+    print(poi_type)
+    # Format the data
+    data = OrderedDict(
+        [
+            ("Type", poi_type),
+            ("Name", poi_name),
+            ("Uri", poi_uri)
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
     #return f'Other POIs in same location as selected POI: {output["otherPOIs"]}'
     #return f'POI: {poi}, location type: {location_type}, another poi: {another_poi}, chosen poi: {choice_poi}'
 
@@ -588,7 +626,43 @@ def update_output(n_clicks, poi, period, pattern):
     query_5['associated-with'] = period
     query_5['pattern'] = ''
     print(f"query 5: {query_5}")
-    return f'POI: {poi}, associated_with: {period}, pattern: {pattern}'
+    point_of_interests = QueryExecutor().query_5(poi, pattern)
+    poi_type = [e['POI']['value'] for e in point_of_interests['results']['bindings']]
+    print(poi_type)
+
+    # Format Type
+    for i in range(0, len(poi_type), 1):
+        print()
+        if "dbpedia.org" in poi_type[i]: 
+            poi_type[i] = poi_type[i].split("http://dbpedia.org/ontology/", 1)[1]
+        else:  poi_type[i] = poi_type[i].split("#", 1)[1]
+
+    poi_name = [e['name']['value'] for e in point_of_interests['results']['bindings']]
+    poi_uri = [e['place']['value'] for e in point_of_interests['results']['bindings']]
+
+    print("name", poi_name)
+    print(poi_uri)
+    print(poi_type)
+    # Format the data
+    data = OrderedDict(
+        [
+            ("Type", poi_type),
+            ("Name", poi_name),
+            ("Uri", poi_uri)
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
+
+    #return f'POI: {poi}, associated_with: {period}, pattern: {pattern}'
 
 
 @app.callback(
@@ -624,18 +698,52 @@ def update_output(n_clicks, period, poi):
     Input('submit_7', 'n_clicks'),
     State('poi-dropdown-7', 'value'),
     State('period-dropdown-7', 'value'),
-    State('another-poi-dropdown-7', 'value'),
+    State('poi-names', 'value'),
     prevent_initial_call=True
 )
+
 def update_output(n_clicks, poi, period_type, another_poi):
     query_7['poi'] = poi
     query_7['period_type'] = period_type
     query_7['another_poi'] = another_poi
+    print("another_poi: ", another_poi)
 
-    # TODO: name of another poi using sparql query
+    point_of_interests = QueryExecutor().query_7(poi, period_type, another_poi)
+    poi_type = [e['POI']['value'] for e in point_of_interests['results']['bindings']]
+    print(poi_type)
 
-    print(f"query 7: {query_7}")
-    return f'POI: {poi}, period type: {period_type}, another poi: {another_poi}'
+    # Format Type
+    for i in range(0, len(poi_type), 1):
+        print()
+        if "dbpedia.org" in poi_type[i]: 
+            poi_type[i] = poi_type[i].split("http://dbpedia.org/ontology/", 1)[1]
+        else:  poi_type[i] = poi_type[i].split("#", 1)[1]
+
+    poi_name = [e['name']['value'] for e in point_of_interests['results']['bindings']]
+    poi_uri = [e['place']['value'] for e in point_of_interests['results']['bindings']]
+
+    print("name", poi_name)
+    print(poi_uri)
+    print(poi_type)
+    # Format the data
+    data = OrderedDict(
+        [
+            ("Type", poi_type),
+            ("Name", poi_name),
+            ("Uri", poi_uri)
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
+   
 
 # callback to chain the dropdowns
 @app.callback(
