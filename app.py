@@ -91,20 +91,13 @@ app.layout = html.Div([
         ]
     ),
 
-    html.H2(children="Discover the Locations with the Max and Min Historical Points of Interest",
+    html.H2(children="Discover how many Historical Points of Interest are in a Location",
             style={'textAlign': 'center', 'verticalAlign': 'middle', 'line-height': '20vh'}),
     html.Div(
         style={'backgroundColor': '#FFFFFF'},
         children=[
-            html.H4(children="Get the"),
-            dcc.Dropdown(
-                id='location-dropdown-3',
-                style={'width': '40%'},
-                options=[{'label': l, 'value': l} for l in location],
-                value='',
-                placeholder="Select location type",
-            ),
-            html.H4(children="with the max and min"),
+
+            html.H4(children="Get the number of"),
             dcc.Dropdown(
                 id='poi-dropdown-3',
                 style={'width': '60%'},
@@ -113,8 +106,17 @@ app.layout = html.Div([
                 multi=True,
                 placeholder="Select point of interest type",
             ),
+            html.H4(children="In all of the"),
+            dcc.Dropdown(
+                id='location-dropdown-3',
+                style={'width': '40%'},
+                options=[{'label': l, 'value': l} for l in location],
+                value='',
+                placeholder="Select location type",
+            ),
             html.H4(children=""),
             html.Button('Submit', id='submit_3', n_clicks=0),
+            html.H4(children=""),
             html.Div(id='query3-output'),
 
         ]
@@ -499,7 +501,34 @@ def update_output(n_clicks, poi, location_type):
     print(f"query 3: {query_3}")
     output = QueryExecutor().query_2(poi, location_type)
 
-    return f'Max and Min selected point of interests are located in {output["max"][0]} and {output["min"][0]} with a count of {output["max"][1]} and {output["min"][1]} respectively.'
+
+    # Extract Type, Name and URI
+    location_names = [e['name']['value'] for e in output['results']['bindings']]
+    print(location_names)
+
+    counts = [e['count']['value'] for e in output['results']['bindings']]
+
+    print(counts)
+
+    # Format the data
+    data = OrderedDict(
+        [
+            (location_type, location_names),
+            ("Counts", counts),
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
+
+    #return f'Max and Min selected point of interests are located in {output["max"][0]} and {output["min"][0]} with a count of {output["max"][1]} and {output["min"][1]} respectively.'
 
 
 @app.callback(
