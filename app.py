@@ -409,7 +409,14 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select location type",
             ),
-
+            html.H4(children=""),
+            dcc.Dropdown(
+                id='location-town-county-dropdown-9',
+                style={'width': '40%'},
+                options=[{'label': l, 'value': l} for l in location],
+                value='',
+                placeholder="Select location type",
+            ),
             html.H4(children="and associated with the"),
             dcc.Dropdown(
                 id='period-dropdown-9',
@@ -423,6 +430,14 @@ app.layout = html.Div([
                 placeholder="Select period",
             ),
 
+            html.H4(children=""),
+            dcc.Dropdown(
+                id='period-pattern-9',
+                style={'width': '40%'},
+
+                value='',
+                placeholder="Select period",
+            ),
             html.H4(children=""),
             html.Button('Submit', id='submit_9', n_clicks=0),
             html.Div(id='query9-output'),
@@ -882,12 +897,50 @@ def set_cities_options(value):
     State('location-dropdown-8', 'value'),
     State('location-town-county-dropdown-8', 'value'),
     State('period-dropdown-8', 'value'),
+    State('period-pattern-8', 'value'),
 
     prevent_initial_call=True
 )
-def update_output(n_clicks, poi, location_type, location, period):
+def update_output(n_clicks, poi, location_type, location, period, period_pattern):
     print(poi, location_type, location, period)
-    return f'POI: {poi}, location type: {location_type}, location: {location} period type: {period}'
+    results = QueryExecutor().query_8(poi, location, period_pattern)
+    print(results)
+    poi_type = [e['thing']['value'] for e in results['results']['bindings']]
+    print(poi_type)
+
+    # Format Type
+    for i in range(0, len(poi_type), 1):
+        print()
+        if "dbpedia.org" in poi_type[i]:
+            poi_type[i] = poi_type[i].split("http://dbpedia.org/ontology/", 1)[1]
+        else:
+            poi_type[i] = poi_type[i].split("#", 1)[1]
+
+    poi_name = [e['name']['value'] for e in results['results']['bindings']]
+    poi_uri = [e['thing']['value'] for e in results['results']['bindings']]
+
+    print(poi_name)
+    print(poi_uri)
+
+    # Format the data
+    data = OrderedDict(
+        [
+            ("Type", poi_type),
+            ("Name", poi_name),
+            ("Uri", poi_uri)
+        ]
+    )
+    df = pd.DataFrame(data)
+    data = df.to_dict('records')
+    columns = [{'id': c, 'name': c} for c in df.columns]
+
+    # Return Table
+    return dash_table.DataTable(
+        id='table',
+        columns=columns,
+        data=data,
+        style_cell={'textAlign': 'left'})
+    #return f'{results}'
 
  #callback to chain the dropdowns
 @app.callback(
@@ -917,29 +970,35 @@ def set_cities_options(value):
     Input('submit_9', 'n_clicks'),
     State('poi-dropdown-9', 'value'),
     State('location-dropdown-9', 'value'),
+    State('location-town-county-dropdown-9', 'value'),
     State('period-dropdown-9', 'value'),
-
+    State('period-pattern-9', 'value'),
 
     prevent_initial_call=True
 )
-def update_output(n_clicks, poi, location_type, period, another_poi):
+def update_output(n_clicks, poi, location_type, location, period, period_pattern):
     print(poi, location_type, location, period)
-    return f'POI: {poi}, location type: {location_type}, period type: {period}, another_poi: {another_poi}'
+    results = QueryExecutor().query_9(poi, location, period_pattern)
+    return f'Count: {results["results"]["bindings"][0]["count"]["value"]}'
 
-# @app.callback(
-#     dash.dependencies.Output('poi-names-9', 'options'),
-#     [dash.dependencies.Input('another-poi-dropdown-9', 'value')],
-#     prevent_initial_call=True)
-# def set_cities_options(value):
-#     if value == 'Museum':
-#         return museums
-#     elif value == 'Landmarks':
-#         return landmarks
-#     elif value == 'Walled Towns':
-#         return walledTowns
-#     else:
-#         return pilgrimPaths
+@app.callback(
+    dash.dependencies.Output('location-town-county-dropdown-9', 'options'),
+    [dash.dependencies.Input('location-dropdown-9', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    return counties if value == 'County' else towns
 
+@app.callback(
+    dash.dependencies.Output('period-pattern-9', 'options'),
+    [dash.dependencies.Input('period-dropdown-9', 'value')],
+    prevent_initial_call=True)
+def set_cities_options(value):
+    if value == 'year':
+        return years[2:]
+    elif value == 'historicCentury':
+        return historicCenturies
+    else:
+        return historicPeriods
 
 
 if __name__ == '__main__':

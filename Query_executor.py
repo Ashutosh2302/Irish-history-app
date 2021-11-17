@@ -427,7 +427,7 @@ class QueryExecutor:
     
     def query_5(self, entityType, selectedDate):
         FILTER = QueryExecutor().create_filter(entityType, 'POI')
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         output = { 'placesOfInterest' : ''}
         
         query = """           
@@ -445,7 +445,7 @@ class QueryExecutor:
                 ORDER BY ASC(UCASE(str(?name)))
                 """
         query = string.Template(query).substitute(FILTER=FILTER, selectedDate=selectedDate)
-        print(query);
+        print(query)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()
@@ -456,7 +456,7 @@ class QueryExecutor:
 
         print(timePeriodType)
 
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         output = { 'placesOfInterest' : ''}
         
         #museums,landmarks only associated to year,century or both
@@ -485,18 +485,66 @@ class QueryExecutor:
         else:
             subPeriod = 'ours:historicCentury'
         query = string.Template(query).substitute(FILTER=FILTER, timePeriod = subPeriod, selectedPOI=anotherPoiInPeriod)
-        print(query);
+        print(query)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()
         return results
 
-    #def query_4(self, p):
-poiType = ['Pilgrim Path', 'Walled Towns']
-debug = QueryExecutor()
-#debug.query_4(poiType, 'County', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive')
-#QueryExecutor().query_4( poiType, 'County', 'Landmarks', 'http://www.semanticweb.org/ontology/irishhistory##pointOfinterestAbbey%20Theatre%20Archive');
 
-secondPOI = ['Pilgrim Path']
-location = 'http://www.semanticweb.org/ontology/irishhistory#countyDonegal'
-#debug.query_1(secondPOI, location)
+    def query_8(self, entityType, location, period):
+        FILTER = QueryExecutor().create_filter(entityType, 'thing')
+        sparql = SPARQLWrapper(self.endPoint)
+        query = """           
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT * WHERE  {
+                    ?something a ?thing .
+                    ?something ours:associatedWith <$PERIOD> .
+                    ?something gn:locatedIn <$LOCATION> .
+                    ?something dbo:name ?name
+                    $FILTER
+                }
+
+                """
+        query = string.Template(query).substitute(FILTER=FILTER, PERIOD=period, LOCATION=location)
+        print(query)
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
+
+    def query_9(self, entityType, location, period):
+        FILTER = QueryExecutor().create_filter(entityType, 'thing')
+        sparql = SPARQLWrapper(self.endPoint)
+        query = """           
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                SELECT (COUNT(DISTINCT ?name) as ?count) WHERE {
+                    ?something a ?thing .
+                    ?something ours:associatedWith <$PERIOD> .
+                    ?something gn:locatedIn <$LOCATION> .
+                    ?something dbo:name ?name
+                    $FILTER
+                }
+                """
+        query = string.Template(query).substitute(FILTER=FILTER, PERIOD=period, LOCATION=location)
+        print(query)
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
+    #def query_4(self, p):
+# poiType = ['Pilgrim Path', 'Walled Towns']
+# debug = QueryExecutor()
+# #debug.query_4(poiType, 'County', 'http://www.semanticweb.org/ontology/irishhistory#pointOfinterestAbbey%20Theatre%20Archive')
+# #QueryExecutor().query_4( poiType, 'County', 'Landmarks', 'http://www.semanticweb.org/ontology/irishhistory##pointOfinterestAbbey%20Theatre%20Archive');
+#
+# secondPOI = ['Pilgrim Path']
+# location = 'http://www.semanticweb.org/ontology/irishhistory#countyDonegal'
+# #debug.query_1(secondPOI, location)
