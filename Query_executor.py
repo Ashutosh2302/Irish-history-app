@@ -6,7 +6,7 @@ class QueryExecutor:
     
     def __init__(self):
         self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory#'
-        self.endPoint = 'http://localhost:7200/repositories/KDE-project'
+        self.endPoint = 'http://localhost:7200/repositories/kde-repo'
 
     def loading_default_data(self):
 
@@ -50,7 +50,7 @@ class QueryExecutor:
         townIRIs = [e['town']['value'] for e in towns['results']['bindings']]
         # townIRIs = [e[0: e.rfind('/'):] + e[e.rfind('/') + 1::] for e in townIRIs]
         
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
@@ -70,7 +70,7 @@ class QueryExecutor:
         museumNames = [e['name']['value'] for e in museums['results']['bindings']]
         museumIRIs = [e['museum']['value'] for e in museums['results']['bindings']]
         
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
@@ -90,7 +90,7 @@ class QueryExecutor:
         landmarkNames = [e['name']['value'] for e in landmarks['results']['bindings']]
         landmarkIRIs = [e['landmark']['value'] for e in landmarks['results']['bindings']]
 
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
@@ -110,7 +110,7 @@ class QueryExecutor:
         walledTownNames = [e['name']['value'] for e in walledTowns['results']['bindings']]
         walledTownIRIs = [e['walledTown']['value'] for e in walledTowns['results']['bindings']]
         
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         query = '''
                 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
@@ -289,49 +289,42 @@ class QueryExecutor:
         FILTER = QueryExecutor().create_filter(entityType, 'POI')
         sparql = SPARQLWrapper(self.endPoint)
         output = {'max': '', 'min': ''}
-        for pattern in ['DESC', 'ASC']:
-            query = """           
-                    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                    PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
-                    PREFIX owl: <http://www.w3.org/2002/07/owl#>
-                    PREFIX dbo: <http://dbpedia.org/ontology/>
-                    PREFIX gn: <http://www.geonames.org/ontology#>
-                    
-                    SELECT ?name (COUNT(?o) as ?count) WHERE {
-                        ?t ours:containsLocation ?o .
-                        ?t dbo:name ?name .	
-                        ?t a $LOCATION .
-                        ?o a ?POI .
-                        $FILTER
-                    }
-                    GROUP BY ?name
-                    ORDER BY $PATTERN(?count)
-                    LIMIT 1
-                 """
-            if location.lower() == 'county':
-                LOCATION = 'ours:county'
-            else:
-                LOCATION = 'ours:locality'
 
-            query = string.Template(query).substitute(FILTER=FILTER, PATTERN=pattern, LOCATION=LOCATION)
+        query = """           
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+                
+                SELECT ?name (COUNT(?o) as ?count) WHERE {
+                    ?t ours:containsLocation ?o .
+                    ?t dbo:name ?name .	
+                    ?t a $LOCATION .
+                    ?o a ?POI .
+                    $FILTER
+                }
+                GROUP BY ?name
+                ORDER BY DESC(?count)
+             """
+        if location.lower() == 'county':
+            LOCATION = 'ours:county'
+        else:
+            LOCATION = 'ours:locality'
 
-            sparql.setQuery(query)
-            sparql.setReturnFormat(JSON)
-            results = sparql.query().convert()
-            print("results:", results)
-            if pattern == 'DESC':
-                output['max'] = results['results']['bindings'][0]['name']['value'], \
-                                results['results']['bindings'][0]['count']['value']
-            else:
-                output['min'] = results['results']['bindings'][0]['name']['value'], \
-                                results['results']['bindings'][0]['count']['value']
-        print(output)
-        return output
+        query = string.Template(query).substitute(FILTER=FILTER, LOCATION=LOCATION)
+
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        print("results:", results)
+
+        return results
 
     def query_4(self, entityType, locationType, otherPoiInLocation):
         FILTER = QueryExecutor().create_filter(entityType, 'POI')
 
-        sparql = SPARQLWrapper("http://localhost:7200/repositories/KDE-project")
+        sparql = SPARQLWrapper(self.endPoint)
         output = { 'placesOfInterest' : ''}
         
         query = """           
