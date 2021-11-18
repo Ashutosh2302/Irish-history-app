@@ -6,7 +6,7 @@ class QueryExecutor:
     
     def __init__(self):
         self.ontologyBaseURI = 'http://www.semanticweb.org/ontology/irishhistory#'
-        self.endPoint = 'http://localhost:7200/repositories/kde-repo'   #Change to update to local machine repository name
+        self.endPoint = 'http://localhost:7200/repositories/KDE-repo'   #Change to update to local machine repository name
 
     def loading_default_data(self):
 
@@ -478,6 +478,59 @@ class QueryExecutor:
         results = sparql.query().convert()
         return results
 
+    def query_6(self, entityType, timePeriodType):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
+        sparql = SPARQLWrapper(self.endPoint)
+        output = { 'placesOfInterest' : ''}
+
+        query = """
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
+                PREFIX owl: <http://www.w3.org/2002/07/owl#>
+                PREFIX dbo: <http://dbpedia.org/ontology/>
+                PREFIX gn: <http://www.geonames.org/ontology#>
+        SELECT ?name (COUNT(DISTINCT ?place) as ?count) WHERE {
+    {		
+        ?place a ?POI .
+        ?place ours:associatedWith ?somePeriod .
+        ?somePeriod a $periodType .
+        ?somePeriod dbo:name ?name .
+        $FILTER
+    }
+    UNION {	
+        ?place a ?POI .
+        ?place ours:associatedWith $periodType .
+        ?century a ours:historicCentury .
+        ?century ours:within ?somePeriod .
+        ?somePeriod a dbo:HistoricalPeriod .
+        ?somePeriod dbo:name ?name .
+        $FILTER
+    }
+     UNION {		
+        ?place a ?POI .
+        ?place ours:associatedWith $periodType .
+        ?century a dbo:HistoricalPeriod .
+        ?century ours:within ?somePeriod .
+        ?somePeriod a dbo:HistoricalPeriod .
+        ?somePeriod dbo:name ?name .
+        $FILTER
+    }
+    }
+    GROUP BY ?name
+        """
+        if timePeriodType.lower() == 'historicalperiod':
+            subPeriod = 'dbo:HistoricalPeriod'
+        elif timePeriodType.lower() == 'year':
+            subPeriod = 'dbo:Year'
+        else:
+            subPeriod = 'ours:historicCentury'
+        query = string.Template(query).substitute(FILTER=FILTER, periodType = subPeriod)
+        print(query)
+        sparql.setQuery(query)
+        sparql.setReturnFormat(JSON)
+        results = sparql.query().convert()
+        return results
+
     def query_7(self, entityType, timePeriodType, anotherPoiInPeriod):
         FILTER = QueryExecutor().create_filter(entityType, 'POI1')
 
@@ -486,23 +539,6 @@ class QueryExecutor:
         sparql = SPARQLWrapper(self.endPoint)
         output = { 'placesOfInterest' : ''}
         
-        #museums,landmarks only associated to year,century or both
-        #pilgrimPath, walledTown are only historical periods
-        #
-        # query = """
-        #         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        #         PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
-        #         PREFIX owl: <http://www.w3.org/2002/07/owl#>
-        #         PREFIX dbo: <http://dbpedia.org/ontology/>
-        #         PREFIX gn: <http://www.geonames.org/ontology#>
-        #         SELECT DISTINCT ?place ?POI ?name WHERE {
-        #             ?place a ?POI .
-        #             ssociatedWith <$selectedPOI> .
-        #             ?place dbo:name ?name .
-        #             $FILTER
-        #             }
-        #         ORDER BY ASC(UCASE(str(?name)))
-        #         """
         x = """
             
  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -558,25 +594,35 @@ ORDER BY ASC(UCASE(str(?name)))
         return results
 
 
-    def query_8(self, entityType, location, period):
-        FILTER = QueryExecutor().create_filter(entityType, 'thing')
+    def query_8(self, entityType, locationType, specificLocation, periodType, specificPeriod):
+        FILTER = QueryExecutor().create_filter(entityType, 'POI')
         sparql = SPARQLWrapper(self.endPoint)
         query = """           
-                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
-                SELECT * WHERE  {
-                    ?something a ?thing .
-                    ?something ours:associatedWith <$PERIOD> .
-                    ?something gn:locatedIn <$LOCATION> .
-                    ?something dbo:name ?name
-                    $FILTER
+                SELECT DISTINCT ?name ?POI ?something WHERE {
+                {
+                ?something a ?POI .
+                ?something gn:locatedIn <$selectedLocation> .
+                ?somePeriod ours:associatedWith <$PERIOD> .
+                ?something dbo:name ?name
+                $FILTER
                 }
-
-                """
-        query = string.Template(query).substitute(FILTER=FILTER, PERIOD=period, LOCATION=location)
+                UNION {		
+                ?something a ?POI .
+                ?something ours:associatedWith ?somePeriod .
+                ?somePeriod ours:within ?anotherPeriod .
+                ?anotherPeriod ours:within <$PERIOD> .
+                ?something gn:locatedIn <$selectedLocation> .
+                ?something dbo:name ?name .
+                $FILTER
+            }
+        }
+        """
+            
+        query = string.Template(query).substitute(FILTER=FILTER, PERIOD=specificPeriod, selectedLocation=specificLocation)
         print(query)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
