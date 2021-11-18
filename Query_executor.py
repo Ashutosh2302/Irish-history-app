@@ -444,7 +444,7 @@ class QueryExecutor:
         #POI directly associatedWith time1 that is within time
         ?place a ?POI .
         ?place ours:associatedWith ?timeOfPOI .
-        ?century ours:within <$PERIOD> .
+        ?timeOfPOI ours:within <$PERIOD> .
         ?place dbo:name ?name .
         $FILTER
     }
