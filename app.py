@@ -23,6 +23,7 @@ location = ['Locality', 'County']
 
 data = QueryExecutor().loading_default_data()
 counties = data[0]
+counties.pop(31)
 #print(counties);
 print("\n")
 towns = data[1]
