@@ -38,11 +38,11 @@ walledTowns = data[4]
 #print(walledTowns);
 print("\n")
 pilgrimPaths = data[5]
-print(pilgrimPaths);
+print(pilgrimPaths)
 print("\n")
 historicPeriods = data[6]
 #print(historicPeriods)
-historicCenturies = data[7]
+historicCenturies = data[7][1:]
 #print(historicCenturies)
 years = data[8]
 #print(years)
