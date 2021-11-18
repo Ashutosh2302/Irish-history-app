@@ -265,7 +265,7 @@ app.layout = html.Div([
                 options=[
                     {'label': 'year', 'value': 'year'},
                     {'label': 'historicCentury', 'value': 'historicCentury'},
-                    {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
+                    # {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
                 ],
                 value='',
                 placeholder="Select period",
@@ -760,7 +760,7 @@ def update_output(n_clicks, period, poi):
     # TODO: max and min poi(s)
     print(f"query 6: {query_6}")
     results = QueryExecutor().query_6(poi, period)
-    timePeriod_name = [e['name']['value'] for e in results['results']['bindings']]
+    timePeriod_name = [e['somePeriod']['value'].split('#')[-1] for e in results['results']['bindings']]
     timePeriod_count = [e['count']['value'] for e in results['results']['bindings']]
 
     data = OrderedDict(

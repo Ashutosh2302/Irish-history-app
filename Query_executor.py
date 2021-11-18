@@ -484,39 +484,20 @@ class QueryExecutor:
         output = { 'placesOfInterest' : ''}
 
         query = """
-                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+               PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX ours: <http://www.semanticweb.org/ontology/irishhistory#>
                 PREFIX owl: <http://www.w3.org/2002/07/owl#>
                 PREFIX dbo: <http://dbpedia.org/ontology/>
                 PREFIX gn: <http://www.geonames.org/ontology#>
-        SELECT ?name (COUNT(DISTINCT ?place) as ?count) WHERE {
-    {		
-        ?place a ?POI .
-        ?place ours:associatedWith ?somePeriod .
-        ?somePeriod a $periodType .
-        ?somePeriod dbo:name ?name .
-        $FILTER
-    }
-    UNION {	
-        ?place a ?POI .
-        ?place ours:associatedWith $periodType .
-        ?century a ours:historicCentury .
-        ?century ours:within ?somePeriod .
-        ?somePeriod a dbo:HistoricalPeriod .
-        ?somePeriod dbo:name ?name .
-        $FILTER
-    }
-     UNION {		
-        ?place a ?POI .
-        ?place ours:associatedWith $periodType .
-        ?century a dbo:HistoricalPeriod .
-        ?century ours:within ?somePeriod .
-        ?somePeriod a dbo:HistoricalPeriod .
-        ?somePeriod dbo:name ?name .
-        $FILTER
-    }
-    }
-    GROUP BY ?name
+                SELECT ?somePeriod (COUNT(DISTINCT ?place) as ?count) WHERE {
+                {
+                ?place a ?POI .
+                ?place ours:associatedWith ?somePeriod .
+                ?somePeriod a $periodType .
+                $FILTER
+                }
+                }
+                GROUP BY ?somePeriod
         """
         if timePeriodType.lower() == 'historicalperiod':
             subPeriod = 'dbo:HistoricalPeriod'
