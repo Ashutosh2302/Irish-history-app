@@ -23,30 +23,16 @@ location = ['Locality', 'County']
 
 data = QueryExecutor().loading_default_data()
 counties = data[0]
+counties.pop(10)
 counties.pop(31)
-#print(counties);
-print("\n")
 towns = data[1]
-#print(towns);
-print("\n")
 museums = data[2]
-##print(museums);
-print("\n")
 landmarks = data[3]
-#print(landmarks);
-print("\n")
 walledTowns = data[4]
-#print(walledTowns);
-print("\n")
 pilgrimPaths = data[5]
-print(pilgrimPaths)
-print("\n")
 historicPeriods = data[6]
-#print(historicPeriods)
 historicCenturies = data[7][1:]
-#print(historicCenturies)
 years = data[8]
-#print(years)
 
 app.layout = html.Div([
 
@@ -71,7 +57,6 @@ app.layout = html.Div([
                 placeholder="Select point of interest",
             ),
             html.H4(children='called'),
-            # another dropdown for names of another poi
             html.H4(children=""),
             dcc.Dropdown(
                 id='describe-poi-names',
@@ -185,7 +170,6 @@ app.layout = html.Div([
                 value='',
                 placeholder="Select a type of point of interest",
             ),
-            # another dropdown for names of another poi
             html.H4(children=""),
 
             dcc.Dropdown(
@@ -265,7 +249,6 @@ app.layout = html.Div([
                 options=[
                     {'label': 'year', 'value': 'year'},
                     {'label': 'historicCentury', 'value': 'historicCentury'},
-                    # {'label': 'historicalPeriod', 'value': 'historicalPeriod'},
                 ],
                 value='',
                 placeholder="Select period",
@@ -510,7 +493,6 @@ def update_output(n_clicks, poi, location_type, location):
 
 
     point_of_interests = QueryExecutor().query_1(poi, location)
-    #return f'output: {point_of_interests}'
     # Extract Type, Name and URI
     poi_type = [e['thing']['value'] for e in point_of_interests['results']['bindings']]
     print(poi_type)
@@ -731,8 +713,6 @@ def update_output(n_clicks, poi, period, pattern):
         data=data,
         style_cell={'textAlign': 'left'})
 
-    #return f'POI: {poi}, associated_with: {period}, pattern: {pattern}'
-
 
 @app.callback(
     dash.dependencies.Output('pattern-dropdown', 'options'),
@@ -760,8 +740,14 @@ def update_output(n_clicks, period, poi):
     # TODO: max and min poi(s)
     print(f"query 6: {query_6}")
     results = QueryExecutor().query_6(poi, period)
+
     timePeriod_name = [e['somePeriod']['value'].split('#')[-1] for e in results['results']['bindings']]
     timePeriod_count = [e['count']['value'] for e in results['results']['bindings']]
+
+    if '0th_Century' in timePeriod_name:
+        index = timePeriod_name.index('0th_Century')
+        del timePeriod_name[index]
+        del timePeriod_count[index]
 
     data = OrderedDict(
         [
